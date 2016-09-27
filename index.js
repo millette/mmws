@@ -13,10 +13,25 @@ const api = (path) => resolveUrl(resolveUrl(process.env.API, APIPATH), path)
 
 const isoNow = () => new Date().toISOString()
 
+var mates
+
+const showTeamMates = (tm) => {
+  mates = JSON.parse(tm.body)
+  console.log(isoNow(), 'mates:', mates)
+  console.log(tm.headers)
+}
+
 const onOpen = () => { console.log(isoNow(), 'open!') }
-const onMsg = (data, flags) => {
-  console.log('flags', Object.keys(flags))
-  console.log(isoNow(), JSON.parse(data))
+const onMsg = (opt, data) => {
+  const msg = JSON.parse(data)
+  console.log(isoNow(), msg)
+  if (msg.team_id && !mates) {
+    got(api('users/profiles/' + msg.team_id), opt)
+      .then(showTeamMates)
+      .catch(console.error)
+  } else if (msg.user_id && mates) {
+    console.log(isoNow(), 'who', mates[msg.user_id])
+  }
 }
 
 const doLogin = () => {
@@ -33,8 +48,9 @@ const doLogin = () => {
 const usersWS = (a) => {
   const opt = { headers: { Authorization: 'Bearer ' + a.headers.token } }
   const ws = new WebSocket('wss://framateam.org/api/v3/users/websocket', opt)
+  const bnd = onMsg.bind(null, opt)
   ws.on('open', onOpen)
-  ws.on('message', onMsg)
+  ws.on('message', bnd)
 }
 
 doLogin().then(usersWS).catch(console.error)
