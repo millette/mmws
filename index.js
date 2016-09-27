@@ -19,7 +19,7 @@ const onOpen = () => { console.log(isoNow(), 'open!') }
 const onMsg = (s, opt, data) => {
   const msg = JSON.parse(data)
   let out
-  if (msg.team_id && !mates) {
+  if (msg.team_id) {
     got(api('users/profiles/' + msg.team_id), opt)
       .then(showTeamMates)
       .catch(console.error)
@@ -31,7 +31,12 @@ const onMsg = (s, opt, data) => {
     } else {
       out = msg.data
     }
-    s[msg.user_id] = out
+
+    if (mates && mates[msg.user_id] && mates[msg.user_id].username) {
+      s[msg.user_id] = out + ' ' + mates[msg.user_id].username
+    } else {
+      s[msg.user_id] = out
+    }
   } else {
     console.log(isoNow(), JSON.stringify(msg, null, ' '))
   }
@@ -58,9 +63,8 @@ const usersWS = (s, a) => {
 const doit = () => {
   const seen = { }
   setInterval(() => {
-    console.log(isoNow(), Object.keys(seen).length, JSON.stringify(seen, null, ' '))
-  }, 10000)
-
+    console.log(JSON.stringify(seen, null, ' '), isoNow(), Object.keys(seen).length)
+  }, 15000)
   doLogin().then(usersWS.bind(null, seen)).catch(console.error)
 }
 
