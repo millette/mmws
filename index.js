@@ -58,6 +58,10 @@ const usersWS = (s, a) => {
   const bnd = onMsg.bind(null, s, opt)
   ws.on('open', onOpen)
   ws.on('message', bnd)
+  return {
+    seen: s,
+    ws: ws
+  }
 }
 
 const lengthSort = (a, b) => {
@@ -75,10 +79,11 @@ const onTimer = (s) => {
   console.log(isoNow(), tot.length, tot.sort(lengthSort).join(', '))
 }
 
-const doit = () => {
+// const doit = () => {
+module.exports = () => {
   const seen = { }
   setInterval(onTimer, 15000, seen)
-  doLogin().then(usersWS.bind(null, seen)).catch(console.error)
+  return doLogin().then(usersWS.bind(null, seen))
 }
 
-doit()
+// doit()
