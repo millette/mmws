@@ -4,6 +4,6 @@ import fn from './'
 
 test('large', async t => {
   const result = await fn()
-  console.log(result)
-  t.truthy(true)
+  t.truthy(result.ws)
+  t.truthy(result.seen)
 })
