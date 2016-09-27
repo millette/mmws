@@ -60,11 +60,24 @@ const usersWS = (s, a) => {
   ws.on('message', bnd)
 }
 
+const lengthSort = (a, b) => {
+  const la = a.length
+  const lb = b.length
+  if (la > lb) { return 1 }
+  if (la < lb) { return -1 }
+  return 0
+}
+
+const onTimer = (s) => {
+  let r
+  const tot = []
+  for (r in s) { tot.push(s[r]) }
+  console.log(isoNow(), tot.length, tot.sort(lengthSort).join(', '))
+}
+
 const doit = () => {
   const seen = { }
-  setInterval(() => {
-    console.log(JSON.stringify(seen, null, ' '), isoNow(), Object.keys(seen).length)
-  }, 15000)
+  setInterval(onTimer, 15000, seen)
   doLogin().then(usersWS.bind(null, seen)).catch(console.error)
 }
 
