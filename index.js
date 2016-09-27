@@ -14,23 +14,24 @@ const api = (path) => resolveUrl(resolveUrl(process.env.API, APIPATH), path)
 const isoNow = () => new Date().toISOString()
 
 var mates
+const seen = { }
 
 const showTeamMates = (tm) => {
   mates = JSON.parse(tm.body)
-  console.log(isoNow(), 'mates:', mates)
-  console.log(tm.headers)
+  // console.log(isoNow(), 'mates:', mates)
+  // console.log(tm.headers)
 }
 
 const onOpen = () => { console.log(isoNow(), 'open!') }
 const onMsg = (opt, data) => {
   const msg = JSON.parse(data)
-  console.log(isoNow(), msg)
+  // console.log(isoNow(), msg)
   if (msg.team_id && !mates) {
     got(api('users/profiles/' + msg.team_id), opt)
       .then(showTeamMates)
       .catch(console.error)
-  } else if (msg.user_id && mates) {
-    console.log(isoNow(), 'who', mates[msg.user_id])
+  } else if (msg.user_id && ('status_change' === msg.event || 'hello' === msg.event)) {
+    seen[msg.user_id] = msg.data
   }
 }
 
@@ -52,5 +53,9 @@ const usersWS = (a) => {
   ws.on('open', onOpen)
   ws.on('message', bnd)
 }
+
+setInterval(() => {
+  console.log(isoNow(), Object.keys(seen).length, JSON.stringify(seen, null, ' '))
+}, 10000)
 
 doLogin().then(usersWS).catch(console.error)
