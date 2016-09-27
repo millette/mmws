@@ -45,6 +45,7 @@
     "standard": "^8.2.0"
   },
   "standard": {
-    "parser": "babel-eslint"
+    "parser": "babel-eslint",
+    "ignore": "vendor/*"
   }
 }
