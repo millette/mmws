@@ -47,7 +47,7 @@ const doLogin = () => {
 
 const usersWS = (a) => {
   const opt = { headers: { Authorization: 'Bearer ' + a.headers.token } }
-  const ws = new WebSocket('wss://framateam.org/api/v3/users/websocket', opt)
+  const ws = new WebSocket(api('users/websocket').replace('https://', 'wss://'), opt)
   const bnd = onMsg.bind(null, opt)
   ws.on('open', onOpen)
   ws.on('message', bnd)
