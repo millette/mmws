@@ -9,29 +9,22 @@ const WebSocket = require('ws')
 
 // core
 const resolveUrl = require('url').resolve
+
 const api = (path) => resolveUrl(resolveUrl(process.env.API, APIPATH), path)
-
 const isoNow = () => new Date().toISOString()
-
 var mates
 const seen = { }
-
-const showTeamMates = (tm) => {
-  mates = JSON.parse(tm.body)
-  // console.log(isoNow(), 'mates:', mates)
-  // console.log(tm.headers)
-}
+const showTeamMates = (tm) => { mates = JSON.parse(tm.body) }
 
 const onOpen = () => { console.log(isoNow(), 'open!') }
 const onMsg = (opt, data) => {
   const msg = JSON.parse(data)
-  // console.log(isoNow(), msg)
   if (msg.team_id && !mates) {
     got(api('users/profiles/' + msg.team_id), opt)
       .then(showTeamMates)
       .catch(console.error)
   } else if (msg.user_id && ('status_change' === msg.event || 'hello' === msg.event)) {
-    seen[msg.user_id] = msg.data
+    seen[msg.user_id] = msg.data.status || msg.data.server_version || msg.data
   }
 }
 
@@ -42,7 +35,6 @@ const doLogin = () => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(login)
   }
-
   return got(api('users/login'), opt)
 }
 
