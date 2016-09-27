@@ -1,6 +1,6 @@
 {
   "name": "mmws",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Mattermost websocket client.",
   "main": "index.js",
   "repository": "millette/mmws",
