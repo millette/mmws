@@ -10,21 +10,30 @@ const WebSocket = require('ws')
 // core
 const resolveUrl = require('url').resolve
 
+var mates
 const api = (path) => resolveUrl(resolveUrl(process.env.API, APIPATH), path)
 const isoNow = () => new Date().toISOString()
-var mates
-const seen = { }
 const showTeamMates = (tm) => { mates = JSON.parse(tm.body) }
-
 const onOpen = () => { console.log(isoNow(), 'open!') }
-const onMsg = (opt, data) => {
+
+const onMsg = (s, opt, data) => {
   const msg = JSON.parse(data)
+  let out
   if (msg.team_id && !mates) {
     got(api('users/profiles/' + msg.team_id), opt)
       .then(showTeamMates)
       .catch(console.error)
-  } else if (msg.user_id && ('status_change' === msg.event || 'hello' === msg.event)) {
-    seen[msg.user_id] = msg.data.status || msg.data.server_version || msg.data
+  } else if (msg.user_id && (msg.event === 'status_change' || msg.event === 'hello')) {
+    if (msg.data.status) {
+      out = msg.data.status
+    } else if (msg.data.server_version) {
+      out = '-'
+    } else {
+      out = msg.data
+    }
+    s[msg.user_id] = out
+  } else {
+    console.log(isoNow(), JSON.stringify(msg, null, ' '))
   }
 }
 
@@ -38,16 +47,21 @@ const doLogin = () => {
   return got(api('users/login'), opt)
 }
 
-const usersWS = (a) => {
+const usersWS = (s, a) => {
   const opt = { headers: { Authorization: 'Bearer ' + a.headers.token } }
   const ws = new WebSocket(api('users/websocket').replace('https://', 'wss://'), opt)
-  const bnd = onMsg.bind(null, opt)
+  const bnd = onMsg.bind(null, s, opt)
   ws.on('open', onOpen)
   ws.on('message', bnd)
 }
 
-setInterval(() => {
-  console.log(isoNow(), Object.keys(seen).length, JSON.stringify(seen, null, ' '))
-}, 10000)
+const doit = () => {
+  const seen = { }
+  setInterval(() => {
+    console.log(isoNow(), Object.keys(seen).length, JSON.stringify(seen, null, ' '))
+  }, 10000)
 
-doLogin().then(usersWS).catch(console.error)
+  doLogin().then(usersWS.bind(null, seen)).catch(console.error)
+}
+
+doit()
