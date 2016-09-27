@@ -1,0 +1,1 @@
+https://github.com/mattermost/platform/raw/93f2b6a83302ceef5c98be4fb696840608ad3bc3/webapp/client/client.jsx
