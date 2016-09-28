@@ -9,38 +9,31 @@ const WebSocket = require('ws')
 
 // core
 const resolveUrl = require('url').resolve
-
-var mates
 const api = (path) => resolveUrl(resolveUrl(process.env.API, APIPATH), path)
 const isoNow = () => new Date().toISOString()
-const showTeamMates = (tm) => { mates = JSON.parse(tm.body) }
-const onOpen = () => { console.log(isoNow(), 'open!') }
 
-const onMsg = (s, opt, data) => {
-  const msg = JSON.parse(data)
-  let out
-  if (msg.team_id) {
-    got(api('users/profiles/' + msg.team_id), opt)
-      .then(showTeamMates)
-      .catch(console.error)
-  } else if (msg.user_id && (msg.event === 'status_change' || msg.event === 'hello')) {
-    if (msg.data.status) {
-      out = msg.data.status
-    } else if (msg.data.server_version) {
-      out = '-'
-    } else {
-      out = msg.data
-    }
+const onMsg = (() => {
+  var mates
+  const showTeamMates = (tm) => { mates = JSON.parse(tm.body) }
 
-    if (mates && mates[msg.user_id] && mates[msg.user_id].username) {
-      s[msg.user_id] = out + ' ' + mates[msg.user_id].username
+  return (s, opt, data) => {
+    const msg = JSON.parse(data)
+    if (msg.team_id) {
+      got(api('users/profiles/' + msg.team_id), opt)
+        .then(showTeamMates)
+        .catch(console.error)
+    } else if (msg.user_id && (msg.event === 'new_user' || msg.event === 'status_change' || msg.event === 'hello')) {
+      let out = msg.data.status || '-'
+      s[msg.user_id] = (mates && mates[msg.user_id] && mates[msg.user_id].username)
+        ? (out + ' ' + mates[msg.user_id].username)
+        : out
     } else {
-      s[msg.user_id] = out
+      console.log(isoNow(), JSON.stringify(msg, null, ' '))
     }
-  } else {
-    console.log(isoNow(), JSON.stringify(msg, null, ' '))
   }
-}
+})()
+
+const onOpen = () => { console.log(isoNow(), 'open!') }
 
 const doLogin = () => {
   const login = { login_id: process.env.LOGIN_ID, password: process.env.PASSWORD }
@@ -64,26 +57,24 @@ const usersWS = (s, a) => {
   }
 }
 
-const lengthSort = (a, b) => {
-  const la = a.length
-  const lb = b.length
-  if (la > lb) { return 1 }
-  if (la < lb) { return -1 }
-  return 0
-}
-
 const onTimer = (s) => {
   let r
-  const tot = []
-  for (r in s) { tot.push(s[r]) }
-  console.log(isoNow(), tot.length, tot.sort(lengthSort).join(', '))
+  let tot = 0
+  const tots = {}
+  for (r in s) {
+    ++tot
+    if (tots[s[r]]) {
+      ++tots[s[r]]
+    } else {
+      tots[s[r]] = 1
+    }
+  }
+  console.log(isoNow(), tot, tots)
 }
 
-// const doit = () => {
 module.exports = () => {
   const seen = { }
-  setInterval(onTimer, 15000, seen)
+  setTimeout(onTimer, 5000, seen)
+  setInterval(onTimer, 30000, seen)
   return doLogin().then(usersWS.bind(null, seen))
 }
-
-// doit()
