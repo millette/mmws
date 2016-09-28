@@ -6,8 +6,6 @@ const APIPATH = 'api/v3/'
 require('dotenv-safe').load()
 const got = require('got')
 const WebSocket = require('ws')
-// const MattermostClient = require('mattermost').Client
-// const MattermostWsClient = require('mattermost').WebSocketClient
 
 // core
 const resolveUrl = require('url').resolve
