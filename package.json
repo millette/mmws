@@ -31,19 +31,19 @@
   ],
   "license": "AGPL-3.0",
   "dependencies": {
-    "dotenv-safe": "^2.3.2",
-    "got": "^6.5.0",
+    "dotenv-safe": "^4.0.3",
+    "got": "^6.7.1",
     "meow": "^3.7.0",
     "pify": "^2.3.0",
-    "update-notifier": "^1.0.2",
+    "update-notifier": "^1.0.3",
     "ws": "^1.1.1"
   },
   "devDependencies": {
-    "ava": "^0.16.0",
-    "babel-eslint": "^7.0.0",
-    "coveralls": "^2.11.14",
-    "nyc": "^8.3.0",
-    "standard": "^8.2.0"
+    "ava": "^0.17.0",
+    "babel-eslint": "^7.1.1",
+    "coveralls": "^2.11.15",
+    "nyc": "^10.0.0",
+    "standard": "^8.6.0"
   },
   "standard": {
     "parser": "babel-eslint",
